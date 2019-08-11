@@ -54,9 +54,16 @@
 
           $result = $prepare->fetch();
           print_r($result);
+          echo '<br>';
           
           if ($result != false) {
-            echo 'ログイン成功';
+            echo 'ログイン成功<br>';
+            echo $result['name'];
+            $_SESSION['valid'] = true;
+            $_SESSION['timeout'] = time();
+            //$_SESSION['usermail'] = $usermail;
+            $_SESSION['username'] = $result['name'];
+            header('Refresh: 2; URL = main.php');
           } else {
             $msg = 'パスワードが違います。';
           }
