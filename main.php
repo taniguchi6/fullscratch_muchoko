@@ -4,12 +4,6 @@
  ini_set('display_errors', 1);
 ?>
 <?php
-  if(isset($_POST['submit']) && !empty($_post['post'])) {
-    $text_post = $_POST['post'];
-    $user_id = $_SESSION['id'];
-    var_dump($text_post);
-  }
-
   try {
 
     $dbh = new PDO(
@@ -24,6 +18,27 @@
     var_dump($_SESSION['id']);
     echo '<br>';
     $id = $_SESSION['id'];
+
+    if($_SERVER['REQUEST_METHOD'] != 'POST') {
+      //画像を取得
+
+    }else {
+      //画像を保存
+      if(!empty($_FILES['image']['name'])) {
+        $image_name = $_FILES['image']['name'];
+        $image_type = $_FILES['image']['type'];
+        $image_content = file_get_contents($_FILES['image']['tmp_name']);
+        $image_size = $_FILES['image']['size'];
+
+        $sql = 'INSERT INTO images(image_name, image_type, image_content, image_size, created_at) VALUES (:image_name, :image_type, :image_content, :image_size, now())';
+        $prepare = $dbh->prepare($sql);
+        $prepare->bindValue(':image_name', $image_name, PDO::PARAM_STR);
+        $prepare->bindValue(':image_type', $image_type, PDO::PARAM_STR);
+        $prepare->bindValue(':image_content', $image_content, PDO::PARAM_STR);
+        $prepare->bindValue(':image_size', $image_size, PDO::PARAM_INT);
+        $prepare->execute();
+      }
+    }
 
     if(isset($_POST['submit']) && !empty($_POST['post'])) {
       $text_post = $_POST['post'];
@@ -75,6 +90,11 @@
       <label for="post">投稿内容</label>
       <input name="post" id="post" cols="30" rows="10">
       <button type="submit" name="submit">投稿</button>
+    </form>
+
+    <form method="post" action="<?php print basename( __FILE__ ); ?>" enctype="multipart/form-data">
+      <input type="file" name="image" accept="image/png,image/jpeg">
+      <input type="submit" value="画像アップロード">
     </form>
   </div>
   <div>
