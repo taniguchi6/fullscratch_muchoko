@@ -34,7 +34,7 @@
           )
         );
         
-        $prepare = $dbh->prepare('SELECT name FROM users WHERE mail = ?');
+        $prepare = $dbh->prepare('SELECT * FROM users WHERE mail = ?');
         $prepare->bindValue(1,$usermail,PDO::PARAM_STR);
         $prepare->execute();
   
@@ -47,7 +47,7 @@
           $password = $_POST['password'];
           echo $password;
           echo '<br>';
-          $prepare = $dbh->prepare('SELECT name FROM users WHERE mail = ? AND password = ?');
+          $prepare = $dbh->prepare('SELECT * FROM users WHERE mail = ? AND password = ?');
           $prepare->bindValue(1,$usermail,PDO::PARAM_STR);
           $prepare->bindValue(2,$password,PDO::PARAM_STR);
           $prepare->execute();
@@ -59,10 +59,13 @@
           if ($result != false) {
             echo 'ログイン成功<br>';
             echo $result['name'];
+            echo '<br>';
+            echo $result['id'];
             $_SESSION['valid'] = true;
             $_SESSION['timeout'] = time();
             //$_SESSION['usermail'] = $usermail;
             $_SESSION['username'] = $result['name'];
+            $_SESSION['id'] = $result['id'];
             header('Refresh: 2; URL = main.php');
           } else {
             $msg = 'パスワードが違います。';
