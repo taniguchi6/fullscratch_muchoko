@@ -1,6 +1,35 @@
 <?php
  //ob_start();
  session_start();
+ ini_set('display_errors', 1);
+?>
+<?php
+  try {
+
+    $dbh = new PDO(
+      'mysql:host=localhost;dbname=users;charset=utf8',
+      'root',
+      'root',
+      array(
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_EMULATE_PREPARES => false,
+      )
+    );
+    
+    $id = 1;
+    //$prepare = $dbh->prepare('');
+    $prepare = $dbh->prepare('SELECT * FROM users WHERE id = ?');
+    $prepare->bindValue(1,(int)$id,PDO::PARAM_INT);
+    $prepare->execute();
+
+    $result = $prepare->fetch();
+    print_r($result);
+
+  } catch (PDOException $e) {
+
+    $error = $e->getMessage();
+    echo $error;
+  }
 ?>
 <!DOCTYPE html>
 <html lang="ja">
@@ -34,6 +63,7 @@
   <div>
     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
       <p><?php echo $msg; ?></p>
+      <p><?php var_dump($result); ?></p>
       <input type="text" name="username" placeholder="username = tutorialspoint" required autofocus><br>
       <input type="password" name = "password" placeholder="password = 1234" required>
       <button type="submit" name="login">Login</button>
