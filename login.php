@@ -3,34 +3,7 @@
  session_start();
  ini_set('display_errors', 1);
 ?>
-<?php
-  try {
 
-    $dbh = new PDO(
-      'mysql:host=localhost;dbname=users;charset=utf8',
-      'root',
-      'root',
-      array(
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_EMULATE_PREPARES => false,
-      )
-    );
-    
-    $id = 1;
-    //$prepare = $dbh->prepare('');
-    $prepare = $dbh->prepare('SELECT * FROM users WHERE id = ?');
-    $prepare->bindValue(1,(int)$id,PDO::PARAM_INT);
-    $prepare->execute();
-
-    $result = $prepare->fetch();
-    print_r($result);
-
-  } catch (PDOException $e) {
-
-    $error = $e->getMessage();
-    echo $error;
-  }
-?>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -45,18 +18,67 @@
   <?php
     $msg = '';
 
-    if(isset($_POST['login']) && !empty($_POST['username']) && !empty($_POST['password'])) {
-      
-      if($_POST['username'] == 'tutorialspoint' && $_POST['password'] == '1234') {
-        //valid?
-        $_SESSION['valid'] = true;
-        $_SESSION['timeout'] = time();
-        $_SESSION['username'] = 'tutorialspoint';
+    if(isset($_POST['login']) && !empty($_POST['email']) && !empty($_POST['password'])) {
+      $usermail = $_POST['email'];
+      var_dump($usermail);
+      echo '<br>';
+      try {
 
-        $msg = 'You have entered valid use name and password';
-      }else {
-        $msg = 'Wrong username or password';
+        $dbh = new PDO(
+          'mysql:host=localhost;dbname=users;charset=utf8',
+          'root',
+          'root',
+          array(
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_EMULATE_PREPARES => false,
+          )
+        );
+        
+        $prepare = $dbh->prepare('SELECT name FROM users WHERE mail = ?');
+        $prepare->bindValue(1,$usermail,PDO::PARAM_STR);
+        $prepare->execute();
+  
+        $result = $prepare->fetch();
+        print_r($result);
+        echo '<br>';
+
+        //ユーザー名が存在していればパスワードの認証をする
+        if($result != false) {
+          $password = $_POST['password'];
+          echo $password;
+          echo '<br>';
+          $prepare = $dbh->prepare('SELECT name FROM users WHERE mail = ? AND password = ?');
+          $prepare->bindValue(1,$usermail,PDO::PARAM_STR);
+          $prepare->bindValue(2,$password,PDO::PARAM_STR);
+          $prepare->execute();
+
+          $result = $prepare->fetch();
+          print_r($result);
+          
+          if ($result != false) {
+            echo 'ログイン成功';
+          } else {
+            $msg = 'パスワードが違います。';
+          }
+        }else {
+          $msg = 'ユーザー名が違います。';
+        }
+  
+      } catch (PDOException $e) {
+  
+        $error = $e->getMessage();
+        echo $error;
       }
+      // if($_POST['email'] == 'tutorialspoint' && $_POST['password'] == 'sample') {
+      //   //valid?
+      //   $_SESSION['valid'] = true;
+      //   $_SESSION['timeout'] = time();
+      //   $_SESSION['username'] = 'tutorialspoint';
+
+      //   $msg = 'You have entered valid use name and password';
+      // }else {
+      //   $msg = 'ユーザー名またはパスワードが間違っています。アカウントをお持ちでない方はユーザー登録してください';
+      // }
     }
   ?>
   </div>
@@ -64,7 +86,7 @@
     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
       <p><?php echo $msg; ?></p>
       <p><?php var_dump($result); ?></p>
-      <input type="text" name="username" placeholder="username = tutorialspoint" required autofocus><br>
+      <input type="mail" name="email" placeholder="email = sample@gmail.co" required autofocus><br>
       <input type="password" name = "password" placeholder="password = 1234" required>
       <button type="submit" name="login">Login</button>
     </form>
