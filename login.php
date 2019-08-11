@@ -13,7 +13,7 @@
   <title>login</title>
 </head>
 <body>
-  <h2>ログイン画面</h2>
+  <h1>ログイン画面</h1>
   <div>
   <?php
     $msg = '';
@@ -34,6 +34,7 @@
           )
         );
         
+        // DBにあるユーザー名の取得
         $prepare = $dbh->prepare('SELECT * FROM users WHERE mail = ?');
         $prepare->bindValue(1,$usermail,PDO::PARAM_STR);
         $prepare->execute();
@@ -61,9 +62,8 @@
             echo $result['name'];
             echo '<br>';
             echo $result['id'];
-            $_SESSION['valid'] = true;
+            // $_SESSION['valid'] = true;
             $_SESSION['timeout'] = time();
-            //$_SESSION['usermail'] = $usermail;
             $_SESSION['username'] = $result['name'];
             $_SESSION['id'] = $result['id'];
             header('Refresh: 2; URL = main.php');
@@ -79,25 +79,30 @@
         $error = $e->getMessage();
         echo $error;
       }
-      // if($_POST['email'] == 'tutorialspoint' && $_POST['password'] == 'sample') {
-      //   //valid?
-      //   $_SESSION['valid'] = true;
-      //   $_SESSION['timeout'] = time();
-      //   $_SESSION['username'] = 'tutorialspoint';
-
-      //   $msg = 'You have entered valid use name and password';
-      // }else {
-      //   $msg = 'ユーザー名またはパスワードが間違っています。アカウントをお持ちでない方はユーザー登録してください';
-      // }
     }
   ?>
   </div>
+  <h2>テスト用アカウント</h2>
+  <ol>
+    <li>
+      <ul>
+        <li>email: sample@gmail.com</li>
+        <li>pass: sample</li>
+      </ul>
+    </li>
+    <li>
+      <ul>
+        <li>email: sample02@gmail.com</li>
+        <li>pass: sample02</li>
+      </ul>
+    </li>
+  </ol>
+  
   <div>
     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
       <p><?php echo $msg; ?></p>
-      <p><?php var_dump($result); ?></p>
-      <input type="mail" name="email" placeholder="email = sample@gmail.co" required autofocus><br>
-      <input type="password" name = "password" placeholder="password = 1234" required>
+      <input type="mail" name="email" placeholder="sample@gmail.com" required autofocus><br>
+      <input type="password" name = "password" placeholder="sample" required>
       <button type="submit" name="login">Login</button>
     </form>
 
