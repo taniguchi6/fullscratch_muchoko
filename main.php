@@ -1,5 +1,4 @@
 <?php
- //ob_start();
  session_start();
  ini_set('display_errors', 1);
 ?>
@@ -15,16 +14,14 @@
         PDO::ATTR_EMULATE_PREPARES => false,
       )
     );
-    var_dump($_SESSION['id']);
-    echo '<br>';
-    $id = $_SESSION['id'];
 
+    // 投稿されたデータの処理ここから
     if(isset($_POST['submit']) && !empty($_POST['post'])) {
       $text_post = $_POST['post'];
       $user_id = $_SESSION['id'];
-      var_dump($text_post);
+      //var_dump($text_post);
 
-      //画像を保存
+      // 画像を保存
       if(!empty($_FILES['image']['name'])) {
         $image_name = $_FILES['image']['name'];
         $image_type = $_FILES['image']['type'];
@@ -41,6 +38,7 @@
         $prepare->execute();
       }
 
+      // テキストの投稿をDBに登録
       $prepare = $dbh->prepare("INSERT INTO text_posts (post_id, user_id, text, date) VALUES (NULL, :user_id, :text_post, CURRENT_TIMESTAMP)");
       $prepare->bindValue(':user_id', (int)$user_id, PDO::PARAM_INT);
       $prepare->bindValue(':text_post', $text_post, PDO::PARAM_STR);
@@ -50,7 +48,6 @@
     // 削除処理
     if(isset($_POST['delete_submit']) && !empty($_POST['delete_id'])) {
       $delete_id = $_POST['delete_id'];
-      var_dump($delete_id);
 
       $prepare = $dbh->prepare("DELETE FROM text_posts WHERE text_posts.post_id = ?");
       $prepare->bindValue(1, (int)$delete_id, PDO::PARAM_INT);
@@ -62,8 +59,6 @@
     $prepare->execute();
 
     $text_posts = $prepare->fetchAll();
-    //print_r($text_posts);
-    echo '<br>';
 
   } catch (PDOException $e) {
 
@@ -77,10 +72,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>login</title>
+  <title>メイン画面</title>
 </head>
 <body>
-  <h2>ようこそ<?php echo $_SESSION['username'];?>さん</h2>
+  <h1>ようこそ<?php echo $_SESSION['username'];?>さん</h1>
+
   <div>
     <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post" enctype="multipart/form-data">
       <p><label for="post">投稿内容</label></p>
@@ -90,12 +86,12 @@
       <button type="submit" name="submit">投稿</button>
     </form>
   </div>
-  <div>
-    <P><a href="logout.php" title="Logout">ログアウト</a></p>
-  </div>
+
+  <p><a href="logout.php" title="Logout">ログアウト</a></p>
+
   <div class="post-wrapper">
-  
     <?php foreach($text_posts as $text_post): ?>
+
       <div class="post">
         <p>
           ユーザー名：<?php echo $text_post['name'];?>
@@ -106,6 +102,7 @@
         <p class="time">
           <?php echo $text_post['date']; ?>
         </p>
+
         <?php if($text_post['image_id']): ?>
           <?php
             $DB_PIC = $text_post['image_content'];
@@ -115,11 +112,14 @@
             finfo_close($finfo);
           ?>
         <?php endif; ?>
+
+        <!-- ログインユーザーの投稿に削除ボタン追加 -->
         <?php if($text_post['user_id'] == $_SESSION['id']): ?>
           <form action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>" method="post">
             <input type="hidden" name="delete_id" value="<?php echo $text_post['post_id']; ?>">
             <input type="submit" value="投稿を削除" name="delete_submit">
         <?php endif; ?>
+        
       </div>
     <?php endforeach; ?>
   </div>
